@@ -1,4 +1,5 @@
 package com.example.myeria.presentation.home
+import android.app.Application
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Notifications
@@ -9,12 +10,18 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import com.example.myeria.Greeting
+import com.example.myeria.presentation.camera.DefaultLocationClient
+import com.example.myeria.presentation.camera.GeofenceBroadcastReceiver
+import com.example.myeria.presentation.camera.LocationClient
 import com.example.myeria.presentation.destinations.CameraScreenDestination
 import com.example.myeria.presentation.home.HomeEvent
 import com.example.myeria.presentation.home.HomeViewModel
+import com.google.android.gms.location.GeofencingClient
+import com.google.android.gms.location.LocationServices
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootNavGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import dagger.hilt.android.internal.Contexts.getApplication
 
 @OptIn(ExperimentalMaterial3Api::class)
 @RootNavGraph(start = true)
@@ -22,7 +29,7 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
-    navigator: DestinationsNavigator
+    navigator: DestinationsNavigator,
 ) {
 
     Scaffold(

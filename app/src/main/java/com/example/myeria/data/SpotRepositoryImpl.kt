@@ -21,4 +21,5 @@ class SpotRepositoryImpl(private val dao:SpotDao): SpotRepository {
            spots->spots.map{it.toSpot()}
        }
     }
+
 }

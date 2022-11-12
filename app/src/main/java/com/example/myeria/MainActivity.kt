@@ -2,8 +2,12 @@ package com.example.myeria
 
 
 
-import android.annotation.SuppressLint
+import android.Manifest.permission.ACCESS_COARSE_LOCATION
+import android.Manifest.permission.ACCESS_FINE_LOCATION
+
+import android.location.Location
 import android.os.Bundle
+
 
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -24,24 +28,53 @@ import androidx.compose.ui.res.painterResource
 
 
 import androidx.compose.ui.unit.dp
+import androidx.core.app.ActivityCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 
 import com.example.myeria.presentation.NavGraphs
-
+import android.Manifest
+import android.app.Activity
+import android.content.Intent
+import android.os.Build
+import androidx.annotation.RequiresApi
+import androidx.compose.ui.platform.LocalContext
+import com.example.myeria.presentation.camera.DefaultLocationClient
+import com.example.myeria.presentation.camera.LocationClient
+import com.example.myeria.presentation.camera.LocationService
 import com.example.myeria.ui.theme.MyEriaTheme
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.LocationSource
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
 import com.ramcosta.composedestinations.DestinationsNavHost
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
-
+import kotlin.random.Random
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private val viewModel: MainViewModel by viewModels()
 
+
+
+    @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        ActivityCompat.requestPermissions(
+            this,
+            arrayOf(
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.ACCESS_FINE_LOCATION,
+
+            ),
+            0
+        )
+
         installSplashScreen().apply {
             setKeepOnScreenCondition {
                 viewModel.isLoading.value
@@ -53,6 +86,8 @@ class MainActivity : ComponentActivity() {
         }
         setContent {
             MyEriaTheme {
+
+
                 // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
@@ -83,7 +118,7 @@ class MainActivity : ComponentActivity() {
         innerPadding: PaddingValues,
         onNavigateToCamera: () -> Unit,
     ) {
-
+        val mContext = LocalContext.current
         LazyColumn(
             contentPadding = innerPadding, modifier = Modifier.padding(16.dp)
         ) {
@@ -150,8 +185,42 @@ class MainActivity : ComponentActivity() {
                 OutlinedButton(onClick = { /*TODO*/ }) {
                     Text("Submit")
                 }
+                Button(onClick = {
+                    Intent(mContext, LocationService::class.java).apply {
+                        action = LocationService.ACTION_START
+                        mContext.startService(this)
+                    }
+                }) {
+                    Text(text = "Start")
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(onClick = {
+                    Intent(mContext, LocationService::class.java).apply {
+                        action = LocationService.ACTION_STOP
+                        mContext.startService(this)
+                    }
+                }) {
+                    Text(text = "Stop")
+                }
             }
         }
 
     }
+
+ class MyLocationSource : LocationSource {
+
+    private var listener: LocationSource.OnLocationChangedListener? = null
+
+    override fun activate(listener: LocationSource.OnLocationChangedListener) {
+        this.listener = listener
+    }
+
+    override fun deactivate() {
+        listener = null
+    }
+
+    fun onLocationChanged(location: Location) {
+        listener?.onLocationChanged(location)
+    }
+}
 
