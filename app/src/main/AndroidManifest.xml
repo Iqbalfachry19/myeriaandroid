@@ -25,7 +25,8 @@
             android:name=".presentation.camera.GeofenceBroadcastReceiver"
             android:enabled="true"
             android:foregroundServiceType="location"
-            android:exported="true"></receiver>
+            android:exported="true"
+            android:permission="TODO" />
 
         <service
             android:name=".presentation.camera.LocationService"

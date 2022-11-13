@@ -27,6 +27,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -181,9 +182,7 @@ fun CameraScreen(viewModel: MapsViewModel = hiltViewModel()) {
                         uiSettings = uiSettings,
                         cameraPositionState = cameraPositionState,
                         locationSource = viewModel.locationSource,
-                        onMapLongClick = {
-                            viewModel.onEvent(MapEvent.OnMapLongClick(it))
-                        },
+
                         onMapLoaded = {
                             viewModel.state.isMapLoaded = true
                             viewModel.addGeofence()
@@ -262,11 +261,14 @@ fun CameraScreen(viewModel: MapsViewModel = hiltViewModel()) {
                                     .fillMaxWidth(),
                                 color = Color.Black
                             )
-                            if(viewModel.state.isOnEria) {
+
+
+
+                            if (viewModel.state.isOnEria) {
                                 OutlinedButton(onClick = { /*TODO*/ }) {
                                     Text("Isi Absen")
                                 }
-                            } else{
+                            } else {
                                 Text("Anda berada di luar rumah sakit eria")
                             }
                         }

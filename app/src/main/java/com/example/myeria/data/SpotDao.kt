@@ -1,6 +1,7 @@
 package com.example.myeria.data
 
 
+import androidx.lifecycle.LiveData
 import androidx.room.*
 
 import kotlinx.coroutines.flow.Flow
@@ -12,7 +13,9 @@ interface SpotDao {
 
     @Delete
     suspend fun deleteParkingSpot(spot: SpotEntity)
-
+    @Query("UPDATE spotentity SET isOnEria = :onEria WHERE id = 1")
+    suspend fun updateParkingSpot(onEria:Boolean)
     @Query("SELECT * FROM spotentity")
     fun getParkingSpots(): Flow<List<SpotEntity>>
+
 }

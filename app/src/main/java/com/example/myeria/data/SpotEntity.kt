@@ -5,7 +5,6 @@ import androidx.room.PrimaryKey
 
 @Entity
 data class SpotEntity(
-    val lat:Double,
-    val lng:Double,
+    val isOnEria:Boolean= false,
     @PrimaryKey val id:Int?=null
 )

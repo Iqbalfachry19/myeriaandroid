@@ -36,12 +36,12 @@ import com.example.myeria.presentation.NavGraphs
 import android.Manifest
 import android.app.Activity
 import android.content.Intent
+import android.content.IntentFilter
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.ui.platform.LocalContext
-import com.example.myeria.presentation.camera.DefaultLocationClient
-import com.example.myeria.presentation.camera.LocationClient
-import com.example.myeria.presentation.camera.LocationService
+import com.example.myeria.presentation.camera.*
+import com.example.myeria.presentation.camera.GeofenceBroadcastReceiver.Companion.ACTION_GEOFENCE_EVENT
 import com.example.myeria.ui.theme.MyEriaTheme
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.LocationSource
@@ -61,7 +61,6 @@ class MainActivity : ComponentActivity() {
     private val viewModel: MainViewModel by viewModels()
 
 
-
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -74,6 +73,7 @@ class MainActivity : ComponentActivity() {
             ),
             0
         )
+
 
         installSplashScreen().apply {
             setKeepOnScreenCondition {
@@ -157,7 +157,7 @@ class MainActivity : ComponentActivity() {
                                 painter = painterResource(id = R.drawable.logo),
                                 contentDescription = "logo"
                             )
-                            Text("Laporan Absen", color = Color.Black)
+                            Text("Riwayat Absen", color = Color.Black)
                         }
 
                     }
