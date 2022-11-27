@@ -123,7 +123,7 @@ fun MapScreen(code:String,viewModel: MapsViewModel = hiltViewModel(), modifier: 
             )
             Circle(
                 center = eria,
-                radius = 90.0,
+                radius = 100.0,
                 fillColor = Color(0x2200FF00),
                 strokeColor = Color.Green,
                 strokeWidth = 3f,

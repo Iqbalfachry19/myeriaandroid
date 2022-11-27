@@ -86,7 +86,7 @@ class MapsViewModel @Inject constructor(
 
     private val centerLat = 0.512177414650849
     private val centerLng = 101.43813212084146
-    private val geofenceRadius = 90.0
+    private val geofenceRadius = 100.0
 
     @SuppressLint("MissingPermission")
     fun addGeofence() {
