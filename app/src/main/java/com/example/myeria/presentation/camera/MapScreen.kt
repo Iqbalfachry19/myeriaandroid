@@ -64,10 +64,10 @@ fun MapScreen(code:String,viewModel: MapsViewModel = hiltViewModel(), modifier: 
             )
         }
         val launcherPermission = rememberLauncherForActivityResult(
-            contract = ActivityResultContracts.RequestPermission(),
-            onResult = { granted ->
-                hasBackgroundPermission = granted
-            })
+            contract = ActivityResultContracts.RequestPermission()
+        ) { granted ->
+            hasBackgroundPermission = granted
+        }
 
         val locationState = viewModel.locationFlow.collectAsState(initial = viewModel.newLocation())
         LaunchedEffect(key1 = true) {

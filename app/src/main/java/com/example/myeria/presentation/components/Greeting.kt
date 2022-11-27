@@ -21,8 +21,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.myeria.R
-import com.example.myeria.actionbutton.ActionButton
-import com.example.myeria.actionbutton.Design
+
 import com.example.myeria.presentation.camera.LocationService
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -182,37 +181,7 @@ fun Greeting(
             }) {
                 Text(text = "Stop")
             }
-            ActionButton(
-                text = "Hello World!",
-                modifier = modifier.fillMaxSize(),
-                design = Design.Primary,
-                onClick = {
-                    Toast.makeText(
-                        mContext,
-                        "Hello World!",
-                        Toast.LENGTH_LONG
-                    ).show()
-                },
-                icon = {
-                    Icon(imageVector = Icons.Default.Check, contentDescription = null)
-                }
-            )
-            Spacer(modifier = modifier.height(16.dp) )
-            ActionButton(
-                text = "Secondary",
-                modifier = modifier.fillMaxSize(),
-                design = Design.Secondary,
-                onClick = {
-                    Toast.makeText(
-                        mContext,
-                        "Secondary",
-                        Toast.LENGTH_LONG
-                    ).show()
-                },
-                icon = {
-                    Icon(imageVector = Icons.Default.Close, contentDescription = null,tint=Color(0xFF0f15e))
-                }
-            )
+
         }
     }
 }

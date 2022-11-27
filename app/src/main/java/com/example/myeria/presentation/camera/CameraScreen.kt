@@ -84,10 +84,10 @@ fun CameraScreen(navigator: DestinationsNavigator, modifier: Modifier = Modifier
     }
 
     val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission(),
-        onResult = { granted ->
-            hasCamPermission = granted
-        })
+        contract = ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        hasCamPermission = granted
+    }
     val settingResultRequest = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartIntentSenderForResult()
     ) { activityResult ->
