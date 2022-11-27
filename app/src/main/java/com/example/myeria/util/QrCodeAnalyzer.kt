@@ -1,4 +1,4 @@
-package com.example.myeria
+package com.example.myeria.util
 
 import android.graphics.ImageFormat
 import android.os.Build

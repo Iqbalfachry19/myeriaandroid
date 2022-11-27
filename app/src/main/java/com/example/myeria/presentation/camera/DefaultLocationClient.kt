@@ -2,12 +2,15 @@ package com.example.myeria.presentation.camera
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.location.Location
 import android.location.LocationManager
-import android.location.LocationRequest
 import android.os.Build
 import android.os.Looper
+import android.provider.Settings
 import androidx.annotation.RequiresApi
+import androidx.core.content.ContextCompat.startActivity
+
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationResult
@@ -15,6 +18,7 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
+
 
 class DefaultLocationClient(
     private val context: Context,
@@ -34,11 +38,12 @@ class DefaultLocationClient(
             val isNetworkEnabled =
                 locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
             if (!isGpsEnabled && !isNetworkEnabled) {
+
                 throw LocationClient.LocationException("GPS is disabled")
             }
-            val request = com.google.android.gms.location.LocationRequest.create()
-                .setInterval(interval)
-                .setFastestInterval(interval)
+            val request = com.google.android.gms.location.LocationRequest.Builder(interval)
+                .setMinUpdateIntervalMillis(interval)
+                .build()
             val locationCallback = object : LocationCallback() {
                 override fun onLocationResult(result: LocationResult) {
                     super.onLocationResult(result)
@@ -52,7 +57,7 @@ class DefaultLocationClient(
                 locationCallback,
                 Looper.getMainLooper()
             )
-            awaitClose{
+            awaitClose {
                 client.removeLocationUpdates(locationCallback)
             }
         }

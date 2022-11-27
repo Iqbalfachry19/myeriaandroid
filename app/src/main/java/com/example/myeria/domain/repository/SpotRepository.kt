@@ -1,6 +1,5 @@
 package com.example.myeria.domain.repository
 
-import androidx.lifecycle.LiveData
 import com.example.myeria.domain.model.Spot
 import kotlinx.coroutines.flow.Flow
 

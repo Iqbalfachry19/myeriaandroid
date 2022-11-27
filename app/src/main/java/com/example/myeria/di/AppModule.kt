@@ -1,6 +1,5 @@
 package com.example.myeria.di
 
-import android.app.Application
 import android.content.Context
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -9,7 +8,6 @@ import com.example.myeria.data.SpotDao
 import com.example.myeria.data.SpotDatabase
 import com.example.myeria.data.SpotEntity
 import com.example.myeria.data.SpotRepositoryImpl
-import com.example.myeria.domain.model.Spot
 import com.example.myeria.domain.repository.SpotRepository
 import dagger.Module
 import dagger.Provides
@@ -17,9 +15,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Provider
 import javax.inject.Singleton

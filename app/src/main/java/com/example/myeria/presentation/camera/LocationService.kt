@@ -5,7 +5,9 @@ import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.IBinder
+import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import com.example.myeria.R
 import com.google.android.gms.location.LocationServices
@@ -32,6 +34,7 @@ class LocationService : Service() {
         )
     }
 
+    @RequiresApi(Build.VERSION_CODES.N)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             ACTION_START -> start()
@@ -47,21 +50,23 @@ class LocationService : Service() {
                 .setSmallIcon(R.drawable.ic_launcher_background)
                 .setOngoing(true)
 
-        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE)as NotificationManager
+        val notificationManager =
+            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         locationClient.getLocationUpdates(10000L).catch { e ->
             e.printStackTrace()
-        }.onEach {
-            location->val lat = location.latitude.toString().takeLast(3)
+        }.onEach { location ->
+            val lat = location.latitude.toString().takeLast(3)
             val long = location.longitude.toString().takeLast(3)
             val updatedNotification = notification.setContentText("Location: ($lat,$long)")
-            notificationManager.notify(1,updatedNotification.build())
+            notificationManager.notify(1, updatedNotification.build())
         }
             .launchIn(serviceScope)
         startForeground(1, notification.build())
     }
 
+    @RequiresApi(Build.VERSION_CODES.N)
     private fun stop() {
-stopForeground(true)
+        stopForeground(STOP_FOREGROUND_DETACH)
         stopSelf()
     }
 

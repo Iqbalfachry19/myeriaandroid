@@ -9,8 +9,8 @@ data class MapState(
     val properties: MapProperties = MapProperties(
         isMyLocationEnabled = true
     ),
-    var isMapLoaded:Boolean = false,
-    var isOnEria: Boolean =false,
+    var isMapLoaded: Boolean = false,
+    var isOnEria: Boolean = false,
     val parkingSpots: List<Spot> = emptyList(),
     val isFalloutMap: Boolean = false
 )

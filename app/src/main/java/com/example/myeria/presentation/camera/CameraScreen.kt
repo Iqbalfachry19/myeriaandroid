@@ -16,7 +16,6 @@ import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
-import androidx.compose.animation.AnimatedVisibility
 
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.fadeOut
@@ -27,22 +26,23 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 
 import com.example.myeria.domain.model.Data
-import com.example.myeria.QrCodeAnalyzer
+import com.example.myeria.presentation.destinations.CameraScreenDestination
+import com.example.myeria.presentation.destinations.HomeScreenDestination
+import com.example.myeria.presentation.destinations.MapScreenDestination
+import com.example.myeria.presentation.destinations.ProfileScreenDestination
+import com.example.myeria.util.QrCodeAnalyzer
 
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
@@ -52,36 +52,27 @@ import com.google.gson.Gson
 import com.google.maps.android.compose.*
 
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 
 @RequiresApi(Build.VERSION_CODES.Q)
 @Destination
 @Composable
-fun CameraScreen(viewModel: MapsViewModel = hiltViewModel()) {
+fun CameraScreen(navigator: DestinationsNavigator, modifier: Modifier = Modifier) {
 
 
     var code by remember {
         mutableStateOf("")
     }
 
-    val gson = Gson()
-    val uiSettings = remember {
-        MapUiSettings(zoomControlsEnabled = false)
-    }
-    val eria = LatLng(0.512177414650849, 101.43813212084146)
-    val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(eria, 19f)
-    }
 
-    val locationState = viewModel.locationFlow.collectAsState(initial = viewModel.newLocation())
+
 
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val cameraProviderFuture = remember {
         ProcessCameraProvider.getInstance(context)
     }
-    val markerState = rememberMarkerState(
-        position = eria,
-    )
+
 
     var hasCamPermission by remember {
         mutableStateOf(
@@ -91,60 +82,35 @@ fun CameraScreen(viewModel: MapsViewModel = hiltViewModel()) {
             ) == PackageManager.PERMISSION_GRANTED
         )
     }
-    var hasBackgroundPermission by remember {
-        mutableStateOf(
-            ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.ACCESS_BACKGROUND_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
-        )
-    }
+
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = { granted ->
             hasCamPermission = granted
         })
+    val settingResultRequest = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartIntentSenderForResult()
+    ) { activityResult ->
+        if (activityResult.resultCode == Activity.RESULT_OK)
+            Log.d("appDebug", "Accepted")
+        else {
+            navigator.navigate(HomeScreenDestination)
+            Log.d("appDebug", "Denied")
+        }
+    }
     LaunchedEffect(key1 = true) {
         launcher.launch(Manifest.permission.CAMERA)
-    }
-    val launcherPermission = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission(),
-        onResult = { granted ->
-            hasBackgroundPermission = granted
-        })
-    LaunchedEffect(key1 = true) {
-        launcherPermission.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-    }
-    LaunchedEffect(locationState.value) {
-        Log.d(TAG, "Updating blue dot on map...")
-        viewModel.locationSource.onLocationChanged(locationState.value)
-
-        Log.d(TAG, "Updating camera position...")
-        val cameraPosition = CameraPosition.fromLatLngZoom(
-            LatLng(
-                locationState.value.latitude,
-                locationState.value.longitude
-            ), 19f
+       checkLocationSetting(
+            context = context,
+            onDisabled = { intentSenderRequest ->
+                settingResultRequest.launch(intentSenderRequest)
+            },
+            onEnabled = { /* This will call when setting is already enabled */ }
         )
-        if (viewModel.state.isMapLoaded) {
-            cameraPositionState.animate(
-                CameraUpdateFactory.newCameraPosition(cameraPosition),
-                1_000
-            )
-
-        }
     }
 
-    // Detect when the map starts moving and print the reason
-    LaunchedEffect(cameraPositionState.isMoving) {
-        if (cameraPositionState.isMoving) {
-            Log.d(
-                TAG,
-                "Map camera started moving due to ${cameraPositionState.cameraMoveStartedReason.name}"
-            )
-        }
-    }
-    Column(modifier = Modifier.fillMaxSize()) {
+
+    Column(modifier = modifier.fillMaxSize()) {
         if (hasCamPermission) {
             AndroidView(factory = { context ->
                 val previewView = PreviewView(context)
@@ -170,112 +136,12 @@ fun CameraScreen(viewModel: MapsViewModel = hiltViewModel()) {
                     e.printStackTrace()
                 }
                 previewView
-            }, modifier = Modifier.weight(1f))
+            }, modifier = modifier.weight(1f))
             if (code.isNotEmpty()) {
 
-                Box(Modifier.fillMaxWidth()) {
-
-                    GoogleMap(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        properties = viewModel.state.properties,
-                        uiSettings = uiSettings,
-                        cameraPositionState = cameraPositionState,
-                        locationSource = viewModel.locationSource,
-
-                        onMapLoaded = {
-                            viewModel.state.isMapLoaded = true
-                            viewModel.addGeofence()
-                        }
-                    ) {
-                        Marker(
-                            state = markerState,
-                            title = "Rumah Sakit Eria Pekanbaru",
-                            icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)
-                        )
-                        Circle(
-                            center = eria,
-                            radius = 45.0,
-                            fillColor = Color(0x2200FF00),
-                            strokeColor = Color.Green,
-                            strokeWidth = 3f,
-
-                            )
-                    }
-                    if (!viewModel.state.isMapLoaded) {
-                        androidx.compose.animation.AnimatedVisibility(
-                            modifier = Modifier
-                                .matchParentSize(),
-                            visible = !viewModel.state.isMapLoaded,
-                            enter = EnterTransition.None,
-                            exit = fadeOut(),
-
-
-                            ) {
-
-                            CircularProgressIndicator(
-                                modifier = Modifier
-                                    .background(MaterialTheme.colorScheme.background)
-                                    .wrapContentSize()
-                            )
-
-                        }
-
-                    }
-                    Column {
-                        Spacer(Modifier.weight(1f))
-                        Column(
-                            modifier = Modifier.background(Color.White),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                text = "Nama: ${gson.fromJson(code, Data::class.java).name}",
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier
-                                    .fillMaxWidth(),
-
-                                color = Color.Black
-                            )
-                            Text(
-                                text = "Nik: ${gson.fromJson(code, Data::class.java).nik}",
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier
-                                    .fillMaxWidth(),
-                                color = Color.Black
-                            )
-                            Text(
-                                text = "Jabatan: ${gson.fromJson(code, Data::class.java).jabatan}",
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier
-                                    .fillMaxWidth(),
-                                color = Color.Black
-                            )
-                            Text(
-                                text = "Lokasi: ${gson.fromJson(code, Data::class.java).lokasi}",
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier
-                                    .fillMaxWidth(),
-                                color = Color.Black
-                            )
-
-
-
-                            if (viewModel.state.isOnEria) {
-                                OutlinedButton(onClick = { /*TODO*/ }) {
-                                    Text("Isi Absen")
-                                }
-                            } else {
-                                Text("Anda berada di luar rumah sakit eria")
-                            }
-                        }
-
-                    }
-
-                }
+               navigator.navigate(MapScreenDestination(code=code)){
+                   popUpTo(CameraScreenDestination.route) { inclusive = true }
+               }
 
             }
 
